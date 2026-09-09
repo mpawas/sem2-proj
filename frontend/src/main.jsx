@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createRoot } from 'react-dom/client';
 import { api, openEventStream } from './api.js';
 import TaskForm from './components/TaskForm.jsx';
 import TaskTable from './components/TaskTable.jsx';
@@ -182,4 +183,12 @@ export default function App() {
       showToast(`Burst failed: ${e.message}`, 'err');
     }
   }
+}
+
+// ---------------------------------------------------------------
+// Entry point: mount the dashboard into #root (React 18 createRoot)
+// ---------------------------------------------------------------
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  createRoot(rootElement).render(<App />);
 }

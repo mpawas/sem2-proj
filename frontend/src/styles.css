@@ -91,7 +91,7 @@ input[type='range'] { padding: 0; accent-color: var(--accent); }
   color: var(--text-dim); border-radius: 999px;
   font-size: 11px; padding: 5px 10px; cursor: pointer;
 }
-.filter-chip.active { background: #1f6feb; color: white; border-color: #1f6feb; }
+.filter-chip--active { background: #1f6feb; color: white; border-color: #1f6feb; }
 
 /* ---------------- table ---------------- */
 .task-table { width: 100%; border-collapse: collapse; }
