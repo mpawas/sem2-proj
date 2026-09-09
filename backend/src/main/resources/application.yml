@@ -1,0 +1,28 @@
+# =====================================================================
+# Async Task Scheduler - application configuration
+# =====================================================================
+server:
+  port: 8080
+
+spring:
+  application:
+    name: async-task-scheduler
+  jackson:
+    default-property-inclusion: non_null
+
+scheduler:
+  # Number of worker threads that actually execute jobs
+  workers: 4
+  # Capacity of the internal priority queue (bounded)
+  queue-capacity: 2048
+  # Default execution timeout per task (ms)
+  default-timeout-ms: 60000
+  # Default number of automatic retries on failure
+  max-retries: 2
+  # SSE heartbeat interval (ms) - keeps dashboard connections alive
+  heartbeat-ms: 15000
+
+logging:
+  level:
+    root: INFO
+    com.taskscheduler: DEBUG

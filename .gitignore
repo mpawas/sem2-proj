@@ -1,0 +1,15 @@
+# Frontend
+node_modules/
+dist/
+.vite/
+*.local
+
+# Backend
+backend/target/
+*.class
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
