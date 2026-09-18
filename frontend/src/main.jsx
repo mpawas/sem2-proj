@@ -44,6 +44,16 @@ export default function App() {
       });
   }
 
+  function refreshTasks() {
+    api.list().then((list) => {
+      const m = new Map();
+      list.forEach((t) => m.set(t.id, t));
+      mapRef.current = m;
+      commit(m);
+      refreshStatsSoon();
+    }).catch((e) => showToast(`Backend unreachable: ${e.message}`, 'err'));
+  }
+
   function upsert(task) {
     mapRef.current.set(task.id, task);
     commit(mapRef.current);
@@ -57,13 +67,7 @@ export default function App() {
   }
 
   useEffect(() => {
-    api.list().then((list) => {
-      const m = new Map();
-      list.forEach((t) => m.set(t.id, t));
-      mapRef.current = m;
-      commit(m);
-      refreshStatsSoon();
-    }).catch((e) => showToast(`Backend unreachable: ${e.message}`, 'err'));
+    refreshTasks();
 
     const stream = openEventStream(upsert);
     setConnected(true);
@@ -100,7 +104,7 @@ export default function App() {
 
       <div className="layout">
         <aside className="panel">
-          <TaskForm onSubmit={handleSubmit} onBurst={handleBurst} />
+          <TaskForm onSubmit={handleSubmit} onBurst={handleBurst} onClearFinished={handleClearFinished} />
           <div className="panel-notes">
             <h4>What is happening under the hood?</h4>
             <ul>
@@ -181,6 +185,17 @@ export default function App() {
       showToast(res.message, 'ok');
     } catch (e) {
       showToast(`Burst failed: ${e.message}`, 'err');
+    }
+  }
+
+  async function handleClearFinished() {
+    try {
+      const res = await api.clearFinished();
+      showToast(res.message, 'ok');
+      // Removals do not produce SSE events, so re-sync the table + stats.
+      refreshTasks();
+    } catch (e) {
+      showToast(`Clear failed: ${e.message}`, 'err');
     }
   }
 }

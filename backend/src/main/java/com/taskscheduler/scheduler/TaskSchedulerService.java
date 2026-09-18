@@ -179,6 +179,28 @@ public class TaskSchedulerService {
         return task;
     }
 
+    /**
+     * Evicts every task in a terminal state (COMPLETED, FAILED, CANCELLED,
+     * TIMED_OUT). Active tasks (PENDING / QUEUED / RUNNING) are kept.
+     *
+     * <p>This is the "clear finished" action from the dashboard and the FR-11
+     * requirement (bounded history eviction). The cumulative metric counters are
+     * intentionally not reset — they are lifetime totals for the process.</p>
+     *
+     * @return the number of terminal records removed
+     */
+    public int clearFinished() {
+        List<String> finished = registry.values().stream()
+                .filter(t -> t.status().isTerminal())
+                .map(TaskRecord::id)
+                .toList();
+        finished.forEach(registry::remove);
+        if (!finished.isEmpty()) {
+            log.info("Clear finished: removed {} terminal tasks", finished.size());
+        }
+        return finished.size();
+    }
+
     /** Runnable for the priority queue; dispatcher path. */
     private void dispatch(TaskRecord task) {
         if (!running) {

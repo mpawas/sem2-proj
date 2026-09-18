@@ -57,6 +57,14 @@ public class TaskController {
         return TaskView.from(scheduler.require(id));
     }
 
+    @DeleteMapping
+    public ResponseEntity<java.util.Map<String, Object>> clearFinished() {
+        int removed = scheduler.clearFinished();
+        return ResponseEntity.ok().body(java.util.Map.of(
+                "removed", removed,
+                "message", removed + " finished task(s) cleared"));
+    }
+
     @DeleteMapping("/{id}")
     public TaskView cancel(@PathVariable String id) {
         if (!scheduler.cancel(id)) {

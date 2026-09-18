@@ -25,7 +25,7 @@ function initialForm() {
   };
 }
 
-export default function TaskForm({ onSubmit, onBurst }) {
+export default function TaskForm({ onSubmit, onBurst, onClearFinished }) {
   const [form, setForm] = useState(initialForm);
 
   const params = form.params || {};
@@ -167,6 +167,14 @@ export default function TaskForm({ onSubmit, onBurst }) {
           title="Producer-consumer demo: 10 synthetic tasks"
         >
           🎲 Burst ×10
+        </button>
+        <button
+          className="btn btn--ghost"
+          type="button"
+          onClick={onClearFinished}
+          title="Remove all finished (terminal) tasks, keeps active ones"
+        >
+          🗑 Clear finished
         </button>
       </div>
     </form>

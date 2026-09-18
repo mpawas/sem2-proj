@@ -102,4 +102,42 @@ class TaskSchedulerIntegrationTest {
         assertThat(scheduler.require(task.id()).status())
                 .isEqualTo(TaskStatus.CANCELLED);
     }
+
+    @Test
+    void clearFinishedEvictsOnlyTerminalTasks() {
+        // The Spring context (and therefore the registry) is shared across tests,
+        // so earlier tests may have left terminal tasks behind. We therefore
+        // assert order-independent invariants rather than a global removal count.
+        // Two tasks that run to completion...
+        TaskRecord doneA = scheduler.submit(new TaskSubmitRequest(
+                "done-a", TaskType.DELAY, TaskPriority.NORMAL, 0, 30_000, 0, 0,
+                java.util.Map.of("durationMs", 100)));
+        TaskRecord doneB = scheduler.submit(new TaskSubmitRequest(
+                "done-b", TaskType.DELAY, TaskPriority.NORMAL, 0, 30_000, 0, 0,
+                java.util.Map.of("durationMs", 100)));
+
+        await().atMost(10, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertThat(scheduler.require(doneA.id()).status())
+                        .isEqualTo(TaskStatus.COMPLETED));
+        await().atMost(10, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertThat(scheduler.require(doneB.id()).status())
+                        .isEqualTo(TaskStatus.COMPLETED));
+
+        // ...and one that is still PENDING (long delay) and must be kept.
+        TaskRecord active = scheduler.submit(new TaskSubmitRequest(
+                "still-pending", TaskType.DELAY, TaskPriority.LOW, 120_000, 30_000, 0, 0,
+                java.util.Map.of("durationMs", 100)));
+
+        int removed = scheduler.clearFinished();
+
+        // Our two completed tasks are gone, and the active one survives.
+        assertThat(removed).isGreaterThanOrEqualTo(2);
+        assertThat(scheduler.require(active.id()).status())
+                .isEqualTo(TaskStatus.PENDING);      // active task survives
+        assertThat(scheduler.snapshot().stream().map(TaskRecord::id))
+                .containsExactly(active.id());
+        // Nothing terminal may remain after a clear.
+        assertThat(scheduler.snapshot())
+                .allSatisfy(t -> assertThat(t.status().isTerminal()).isFalse());
+    }
 }

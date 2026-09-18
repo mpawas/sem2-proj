@@ -27,6 +27,7 @@ export const api = {
   submit: (payload) =>
     request('/tasks', { method: 'POST', body: JSON.stringify(payload) }),
   cancel: (id) => request(`/tasks/${id}`, { method: 'DELETE' }),
+  clearFinished: () => request('/tasks', { method: 'DELETE' }),
   retry: (id) => request(`/tasks/${id}/retry`, { method: 'POST' }),
   burst: (count) => request(`/tasks/burst?count=${count}`, { method: 'POST' }),
   health: () => request('/health'),
